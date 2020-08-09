@@ -1,22 +1,103 @@
-<?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
-    <id>https://fforkboat.github.io</id>
-    <title>fforkboat&apos;s dock</title>
-    <updated>2020-08-09T18:59:43.346Z</updated>
-    <generator>https://github.com/jpmonette/feed</generator>
-    <link rel="alternate" href="https://fforkboat.github.io"/>
-    <link rel="self" href="https://fforkboat.github.io/atom.xml"/>
-    <subtitle>福柯船长的船坞</subtitle>
-    <logo>https://fforkboat.github.io/images/avatar.png</logo>
-    <icon>https://fforkboat.github.io/favicon.ico</icon>
-    <rights>All rights reserved 2020, fforkboat&apos;s dock</rights>
-    <entry>
-        <title type="html"><![CDATA[Golang: GOPATH、package、module]]></title>
-        <id>https://fforkboat.github.io/post/golang-gopathpackagemodule/</id>
-        <link href="https://fforkboat.github.io/post/golang-gopathpackagemodule/">
-        </link>
-        <updated>2020-08-09T14:44:55.000Z</updated>
-        <content type="html"><![CDATA[<h2 id="gopath">GOPATH</h2>
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<title>Golang: GOPATH、package、module | fforkboat&#39;s dock</title>
+<link rel="shortcut icon" href="https://fforkboat.github.io/favicon.ico">
+<link href="https://fforkboat.github.io/styles/main.css" rel="stylesheet">
+<link href="//at.alicdn.com/t/font_1678829_ntebi130zaa.css" rel="stylesheet">
+<link rel="alternate" type="application/rss+xml" title="fforkboat&#39;s dock » Feed" href="https://fforkboat.github.io/atom.xml">
+
+  <meta name="description" content="GOPATH
+GOPATH是Go工作区的路径，工作区内包含了三个文件夹：
+
+bin: 存放 Go install命令编译得到的可执行文件
+pkg: 存放编译好的目标文件
+src: 存放源代码
+
+我们可以同时指定多个GOPATH，以此获得多个..." />
+  <meta name="keywords" content="" />
+
+  <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/2.3.1/css/bootstrap.css" rel="stylesheet">
+  <link href="https://fforkboat.github.io/media/css/jquery.tocify.css" rel="stylesheet">
+
+  <script src="https://cdn.bootcdn.net/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+  <script src="https://fforkboat.github.io/media/scripts/jquery.ui.core.js"></script>
+  <script src="https://fforkboat.github.io/media/scripts/bootstrap.js"></script>
+  <script src="https://fforkboat.github.io/media/scripts/jquery.tocify.js"></script>
+</head>
+
+<body style="height: auto">
+  <div id="toc" style="right: 20px; top: 80px"></div>
+  <div class="main animated">
+    <div class="header animated fadeInDown">
+  <div class="site_title_container">
+    <div class="site_title">
+      <a href="https://fforkboat.github.io">
+        fforkboat&#39;s dock
+      </a>
+    </div>
+  </div>
+  <div class="my_socials">
+    
+    
+          
+    
+          
+    
+          
+    
+          
+    
+          
+    <a href="https://fforkboat.github.io/atom.xml" target="_blank">
+      <i class="iconfont icon-rss"></i></a>
+  </div>
+</div>
+
+<div class="header_menu">
+  
+  
+  <a href="/" class="menu">首页</a>
+  
+
+  
+  <a href="/archives" class="menu">归档</a>
+  
+
+  
+  <a href="/tags" class="menu">标签</a>
+  
+
+  
+  <a href="/post/about" class="menu">关于</a>
+  
+
+  <div class="gridea-search-div">
+    <form id="gridea-search-form" action="https://fforkboat.github.io/search/">
+      <input class="gridea-search-input" autocomplete="off" spellcheck="false" name="q" />
+    </form>
+  </div>
+</div>
+
+    <div class="autopagerize_page_element">
+      <div class="content">
+        <div class="post_page">
+          <div class="post animated fadeInDown">
+            <div class="post_title post_detail_title">
+              <h1 class="indicator-free">
+                <a>
+                  Golang: GOPATH、package、module</a>
+              </h2>
+              <span class="article-info">2020-08-09, 945 words, 4 min read</span>
+            </div>
+            <div class="post_content markdown">
+              <p class="md_block">
+                <span class="md_line md_line_start md_line_end">
+                  <h2 id="gopath">GOPATH</h2>
 <p>GOPATH是Go工作区的路径，工作区内包含了三个文件夹：</p>
 <ul>
 <li>bin: 存放 <code>Go install</code>命令编译得到的可执行文件</li>
@@ -45,6 +126,46 @@
 <figure data-type="image" tabindex="1"><img src="https://fforkboat-markdown-img.oss-cn-hongkong.aliyuncs.com/imgimage-20200804164456186.png" alt="image-20200804164456186" loading="lazy"></figure>
 <p>那我们在pkg1.go中引用pkg2包需要使用<code>import example.com/my/a_repo/pkg2</code>，引用Dragonboat 3.0中的config包需要使用<code>import github.com/lni/dragonboat/v3/config</code></p>
 <p>在module模块下，<code>go build path_to_package</code>也发生了变化，和import规则一样，我们需要转为使用<code>go build [module_name]/path/to/package</code>。比如我们编译上图中的pkg2，则命令为: <code>go build example.com/my/a_repo/pkg2</code></p>
-]]></content>
-    </entry>
-</feed>
+<br />
+                  
+              </p>
+            </div>
+            <div class="post_footer">
+              
+              
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+  
+  <div class="powered_by">
+    <a href="https://github.com/tangkaichuan/gridea-theme-one" target="_blank">Theme One,</a>
+    <a href="https://gridea.dev/" target="_blank">Powered by Gridea&#65281;</a>
+  </div>
+  <div class="footer_slogan">
+    福柯船长的船坞
+</div>
+<div id="back_to_top" class="back_to_top">
+  <span>△</span>
+</div>
+<script src="https://fforkboat.github.io/media/scripts/util.js"></script>
+
+</div>
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/styles/default.min.css">
+  <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad();
+    $(function() {
+        //Calls the tocify method on your HTML div.
+        var toc = $("#toc").tocify({ selectors: "h2, h3, h4" }).data("toc-tocify");
+        console.log(toc.options);
+
+    });
+  </script>
+</body>
+
+</html>
