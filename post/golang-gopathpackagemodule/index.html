@@ -106,7 +106,7 @@ src: 存放源代码
                 <a>
                   Golang: GOPATH、package、module</a>
               </h2>
-              <span class="article-info">2020-08-09, 945 words, 4 min read</span>
+              <span class="article-info">2020-08-09, 935 words, 4 min read</span>
             </div>
             <div class="post_content markdown">
               <p class="md_block">
@@ -135,7 +135,7 @@ src: 存放源代码
 <h2 id="module">module</h2>
 <p>module(模块)是Go 1.11引入的一个新的概念，一个模块是一些包的集合，这些包以树状模式组织。</p>
 <p>我们通过<code>go mod init [module_name]</code>来创建一个模块，这条命令会在当前目录下创建一个go.mod文件，这个文件向go标识当前目录（和它的子目录）构成了一个模块。</p>
-<p>在go.mod文件中我们可以写明该模块依赖的其他模块，然后通过go mod download命令来将这些模块下载到本地的缓存中，下载的位置不再是<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>G</mi><mi>O</mi><mi>P</mi><mi>A</mi><mi>T</mi><mi>H</mi><mi mathvariant="normal">/</mi><mi>s</mi><mi>r</mi><mi>c</mi><mi mathvariant="normal">了</mi><mi mathvariant="normal">，</mi><mi mathvariant="normal">而</mi><mi mathvariant="normal">是</mi></mrow><annotation encoding="application/x-tex">GOPATH/src了，而是</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault">G</span><span class="mord mathdefault" style="margin-right:0.02778em;">O</span><span class="mord mathdefault" style="margin-right:0.13889em;">P</span><span class="mord mathdefault">A</span><span class="mord mathdefault" style="margin-right:0.13889em;">T</span><span class="mord mathdefault" style="margin-right:0.08125em;">H</span><span class="mord">/</span><span class="mord mathdefault">s</span><span class="mord mathdefault" style="margin-right:0.02778em;">r</span><span class="mord mathdefault">c</span><span class="mord cjk_fallback">了</span><span class="mord cjk_fallback">，</span><span class="mord cjk_fallback">而</span><span class="mord cjk_fallback">是</span></span></span></span>GOPATH/pkg/mod。</p>
+<p>在go.mod文件中我们可以写明该模块依赖的其他模块，然后通过go mod download命令来将这些模块下载到本地的缓存中，下载的位置不再是<code>$GOPATH/src</code>了，而是<code>$GOPATH/pkg/mod</code>。</p>
 <p>在module模式下，import的规则发生了变化，import后面接着的不再是相对于<code>$GOPATH/src</code>的路径，而是<code>[module_name]/path/to/package</code>举个例子，考虑下面的模块结构，假设go.mod中规定的模块名为<code>example.com/my/a_repo</code>：</p>
 <figure data-type="image" tabindex="1"><img src="https://fforkboat-markdown-img.oss-cn-hongkong.aliyuncs.com/imgimage-20200804164456186.png" alt="image-20200804164456186" loading="lazy"></figure>
 <p>那我们在pkg1.go中引用pkg2包需要使用<code>import example.com/my/a_repo/pkg2</code>，引用Dragonboat 3.0中的config包需要使用<code>import github.com/lni/dragonboat/v3/config</code></p>
