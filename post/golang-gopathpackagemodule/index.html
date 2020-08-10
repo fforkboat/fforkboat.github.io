@@ -174,10 +174,7 @@ src: 存放源代码
   <script>
     hljs.initHighlightingOnLoad();
     $(function() {
-        //Calls the tocify method on your HTML div.
-        var toc = $("#toc").tocify({ selectors: "h2, h3, h4" }).data("toc-tocify");
-        console.log(toc.options);
-
+        $("#toc").tocify({ selectors: "h2, h3, h4" });
     });
   </script>
 </body>
