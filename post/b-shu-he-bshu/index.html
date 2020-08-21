@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<title>B树和B+树 | fforkboat&#39;s dock</title>
+<link rel="shortcut icon" href="https://fforkboat.github.io/favicon.ico">
+<link href="https://fforkboat.github.io/styles/main.css" rel="stylesheet">
+<link href="//at.alicdn.com/t/font_1678829_ntebi130zaa.css" rel="stylesheet">
+<link rel="alternate" type="application/rss+xml" title="fforkboat&#39;s dock » Feed" href="https://fforkboat.github.io/atom.xml">
+
+  <meta name="description" content="B树和B+树都是一种常用于磁盘索引的数据结构，它们的本质是多路平衡搜索树。相比于二叉搜索树，它们的每个节点可以存储更多的关键词，因此它们的整体结构会更加的矮胖，同时，多关键词的节点能够让它们在搜索的过程中减少磁盘IO的次数，提高搜索的性能。..." />
+  <meta name="keywords" content="" />
+
+  <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/2.3.1/css/bootstrap.css" rel="stylesheet">
+  <link href="https://fforkboat.github.io/media/css/jquery.tocify.css" rel="stylesheet">
+
+  <script src="https://cdn.bootcdn.net/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+  <script src="https://fforkboat.github.io/media/scripts/jquery.ui.core.js"></script>
+  <script src="https://fforkboat.github.io/media/scripts/bootstrap.js"></script>
+  <script src="https://fforkboat.github.io/media/scripts/jquery.tocify.js"></script>
+
+  <style>
+    #toc .nav-list > .active > a{
+      color: #007fff;
+      text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
+      background-color: #ebedef;
+    }
+    #toc a {
+      color: #000000;
+    }
+    #toc {
+      border: 0;
+    }
+  </style>
+</head>
+
+<body style="height: auto">
+  <div id="toc" style="right: 20px; top: 80px"></div>
+  <div class="main animated">
+    <div class="header animated fadeInDown">
+  <div class="site_title_container">
+    <div class="site_title">
+      <a href="https://fforkboat.github.io">
+        fforkboat&#39;s dock
+      </a>
+    </div>
+  </div>
+  <div class="my_socials">
+    
+    
+          
+    
+          
+    
+          
+    
+          
+    
+          
+    <a href="https://fforkboat.github.io/atom.xml" target="_blank">
+      <i class="iconfont icon-rss"></i></a>
+  </div>
+</div>
+
+<div class="header_menu">
+  
+  
+  <a href="/" class="menu">首页</a>
+  
+
+  
+  <a href="/archives" class="menu">归档</a>
+  
+
+  
+  <a href="/tags" class="menu">标签</a>
+  
+
+  
+  <a href="/post/about" class="menu">关于</a>
+  
+
+  <div class="gridea-search-div">
+    <form id="gridea-search-form" action="https://fforkboat.github.io/search/">
+      <input class="gridea-search-input" autocomplete="off" spellcheck="false" name="q" />
+    </form>
+  </div>
+</div>
+
+    <div class="autopagerize_page_element">
+      <div class="content">
+        <div class="post_page">
+          <div class="post animated fadeInDown">
+            <div class="post_title post_detail_title">
+              <h1 class="indicator-free">
+                <a>
+                  B树和B+树</a>
+              </h2>
+              <span class="article-info">2020-08-21, 451 words, 2 min read</span>
+            </div>
+            <div class="post_content markdown">
+              <p class="md_block">
+                <span class="md_line md_line_start md_line_end">
+                  <p>B树和B+树都是一种常用于磁盘索引的数据结构，它们的本质是多路平衡搜索树。相比于二叉搜索树，它们的每个节点可以存储更多的关键词，因此它们的整体结构会更加的矮胖，同时，多关键词的节点能够让它们在搜索的过程中减少磁盘IO的次数，提高搜索的性能。</p>
+<h2 id="二者的区别">二者的区别</h2>
+<p>B树和二叉搜索树比较类似，每个节点既需要保存索引值，又需要保存索引所在的数据行信息。而在B+树中，中间节点只会保存索引值，并且这些索引值都出现在子节点中，是子节点的最大（或最小）元素，因此叶子节点中会保存所有的索引值，除此之外，叶子节点还会保存索引所在的数据行信息。聚簇索引中直接保存行数据内容，而非聚簇索引中保存指向行的指针。</p>
+<p>B+树的叶子节点会指向下一个叶子节点，整体上形成一个列表，在这个链表上，索引值从小到大顺序排布。这样的结构非常适合获取有序的结果集，并且获取范围数据只需要遍历链表就可以了，而在B树上需要先找到范围下界索引，再进行中序遍历找到范围上界索引。</p>
+<p>总结起来，B+树的优势在于：</p>
+<ol>
+<li>IO次数更少：因为中间节点不需要保存行数据，可以存储更多的索引值</li>
+<li>查询性能稳定：每次都需要遍历到叶子节点，而B树可能在中间就停下了</li>
+<li>范围查找更加方便</li>
+</ol>
+<br />
+                  
+              </p>
+            </div>
+            <div class="post_footer">
+              
+              
+                <div class="next-post" style="margin-top: 20px;">
+                  <div class="next">下一篇</div>
+                  <a href="https://fforkboat.github.io/post/golang-gopathpackagemodule/">
+                    <h3 class="post-title">
+                      Golang: GOPATH、package、module
+                    </h3>
+                  </a>
+                </div>
+                
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+  
+  <div class="powered_by">
+    <a href="https://github.com/tangkaichuan/gridea-theme-one" target="_blank">Theme One,</a>
+    <a href="https://gridea.dev/" target="_blank">Powered by Gridea&#65281;</a>
+  </div>
+  <div class="footer_slogan">
+    福柯船长的船坞
+</div>
+<div id="back_to_top" class="back_to_top">
+  <span>△</span>
+</div>
+<script src="https://fforkboat.github.io/media/scripts/util.js"></script>
+
+</div>
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/styles/default.min.css">
+  <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad();
+    $(function() {
+        $("#toc").tocify({ selectors: "h2, h3, h4" });
+    });
+  </script>
+</body>
+
+</html>
