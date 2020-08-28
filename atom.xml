@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://fforkboat.github.io</id>
     <title>fforkboat&apos;s dock</title>
-    <updated>2020-08-21T10:21:55.181Z</updated>
+    <updated>2020-08-28T15:32:32.400Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://fforkboat.github.io"/>
     <link rel="self" href="https://fforkboat.github.io/atom.xml"/>
@@ -10,6 +10,30 @@
     <logo>https://fforkboat.github.io/images/avatar.png</logo>
     <icon>https://fforkboat.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, fforkboat&apos;s dock</rights>
+    <entry>
+        <title type="html"><![CDATA[select、poll、epoll]]></title>
+        <id>https://fforkboat.github.io/post/selectpollepoll/</id>
+        <link href="https://fforkboat.github.io/post/selectpollepoll/">
+        </link>
+        <updated>2020-08-28T15:31:41.000Z</updated>
+        <content type="html"><![CDATA[<p>select, poll, epoll是Linux提供的三个用于IO多路复用的系统调用，被封装在C函数中</p>
+<h2 id="select">select</h2>
+<p>在传统的网络编程中，我们为每一个连接分配一个线程，当并发连接达到一定数量时，线程占用的空间会超出存储空间的限制。在基于IO多路复用的新式架构下，我们可以使用一个或者很少数量的线程来管理连接，来监控所有socket的可读写状态，select可以同时监控多个文件描述符的状态，一旦发现任意一个描述符准备好了，就立即返回，并通知应用程序。</p>
+<p>select的问题在于:</p>
+<ol>
+<li>能够传入select的socket数组容量有限，只有1024个；这一点在poll中被解决了(poll也只改进了这一点)</li>
+<li>每一次调用都需要传入感兴趣的文件描述符数组，这个数组会被复制到内核空间中，内核每次都需要扫描和分析它们，文件描述符的数量越多，复制和处理花的时间也就越长，所以它们的工作效率和可拓展性不是很好。</li>
+<li>只要有一个socket可读了，所有的socket都会被扫描一遍来收集它们的可读信息</li>
+</ol>
+<h2 id="epoll">epoll</h2>
+<p>对于select的问题2，epoll的解决方法是：</p>
+<p>提供三个函数，分别用于创建一个类似session的东西、向session传递文件描述符、阻塞的监控多个文件描述符。也就是说我们的FD（文件描述符）只需要传递和分析一次，以后只需要指定session的号码就行了。</p>
+<p>对于问题3：</p>
+<p>epoll中添加了一个read list，用于存放可读的socket，当线程被唤醒后只需要遍历这个read list就可以了。</p>
+<h2 id="参考资料">参考资料</h2>
+<p>https://cloud.tencent.com/developer/article/1005481</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[MD5]]></title>
         <id>https://fforkboat.github.io/post/md5/</id>

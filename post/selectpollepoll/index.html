@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<title>select、poll、epoll | fforkboat&#39;s dock</title>
+<link rel="shortcut icon" href="https://fforkboat.github.io/favicon.ico">
+<link href="https://fforkboat.github.io/styles/main.css" rel="stylesheet">
+<link href="//at.alicdn.com/t/font_1678829_ntebi130zaa.css" rel="stylesheet">
+<link rel="alternate" type="application/rss+xml" title="fforkboat&#39;s dock » Feed" href="https://fforkboat.github.io/atom.xml">
+
+  <meta name="description" content="select, poll, epoll是Linux提供的三个用于IO多路复用的系统调用，被封装在C函数中
+select
+在传统的网络编程中，我们为每一个连接分配一个线程，当并发连接达到一定数量时，线程占用的空间会超出存储空间的限制。在基于I..." />
+  <meta name="keywords" content="" />
+
+  <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/2.3.1/css/bootstrap.css" rel="stylesheet">
+  <link href="https://fforkboat.github.io/media/css/jquery.tocify.css" rel="stylesheet">
+
+  <script src="https://cdn.bootcdn.net/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+  <script src="https://fforkboat.github.io/media/scripts/jquery.ui.core.js"></script>
+  <script src="https://fforkboat.github.io/media/scripts/bootstrap.js"></script>
+  <script src="https://fforkboat.github.io/media/scripts/jquery.tocify.js"></script>
+
+  <style>
+    #toc .nav-list > .active > a{
+      color: #007fff;
+      text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
+      background-color: #ebedef;
+    }
+    #toc a {
+      color: #000000;
+    }
+    #toc {
+      border: 0;
+    }
+  </style>
+</head>
+
+<body style="height: auto">
+  <div id="toc" style="right: 20px; top: 80px"></div>
+  <div class="main animated">
+    <div class="header animated fadeInDown">
+  <div class="site_title_container">
+    <div class="site_title">
+      <a href="https://fforkboat.github.io">
+        fforkboat&#39;s dock
+      </a>
+    </div>
+  </div>
+  <div class="my_socials">
+    
+    
+          
+    
+          
+    
+          
+    
+          
+    
+          
+    <a href="https://fforkboat.github.io/atom.xml" target="_blank">
+      <i class="iconfont icon-rss"></i></a>
+  </div>
+</div>
+
+<div class="header_menu">
+  
+  
+  <a href="/" class="menu">首页</a>
+  
+
+  
+  <a href="/archives" class="menu">归档</a>
+  
+
+  
+  <a href="/tags" class="menu">标签</a>
+  
+
+  
+  <a href="/post/about" class="menu">关于</a>
+  
+
+  <div class="gridea-search-div">
+    <form id="gridea-search-form" action="https://fforkboat.github.io/search/">
+      <input class="gridea-search-input" autocomplete="off" spellcheck="false" name="q" />
+    </form>
+  </div>
+</div>
+
+    <div class="autopagerize_page_element">
+      <div class="content">
+        <div class="post_page">
+          <div class="post animated fadeInDown">
+            <div class="post_title post_detail_title">
+              <h1 class="indicator-free">
+                <a>
+                  select、poll、epoll</a>
+              </h2>
+              <span class="article-info">2020-08-28, 478 words, 2 min read</span>
+            </div>
+            <div class="post_content markdown">
+              <p class="md_block">
+                <span class="md_line md_line_start md_line_end">
+                  <p>select, poll, epoll是Linux提供的三个用于IO多路复用的系统调用，被封装在C函数中</p>
+<h2 id="select">select</h2>
+<p>在传统的网络编程中，我们为每一个连接分配一个线程，当并发连接达到一定数量时，线程占用的空间会超出存储空间的限制。在基于IO多路复用的新式架构下，我们可以使用一个或者很少数量的线程来管理连接，来监控所有socket的可读写状态，select可以同时监控多个文件描述符的状态，一旦发现任意一个描述符准备好了，就立即返回，并通知应用程序。</p>
+<p>select的问题在于:</p>
+<ol>
+<li>能够传入select的socket数组容量有限，只有1024个；这一点在poll中被解决了(poll也只改进了这一点)</li>
+<li>每一次调用都需要传入感兴趣的文件描述符数组，这个数组会被复制到内核空间中，内核每次都需要扫描和分析它们，文件描述符的数量越多，复制和处理花的时间也就越长，所以它们的工作效率和可拓展性不是很好。</li>
+<li>只要有一个socket可读了，所有的socket都会被扫描一遍来收集它们的可读信息</li>
+</ol>
+<h2 id="epoll">epoll</h2>
+<p>对于select的问题2，epoll的解决方法是：</p>
+<p>提供三个函数，分别用于创建一个类似session的东西、向session传递文件描述符、阻塞的监控多个文件描述符。也就是说我们的FD（文件描述符）只需要传递和分析一次，以后只需要指定session的号码就行了。</p>
+<p>对于问题3：</p>
+<p>epoll中添加了一个read list，用于存放可读的socket，当线程被唤醒后只需要遍历这个read list就可以了。</p>
+<h2 id="参考资料">参考资料</h2>
+<p>https://cloud.tencent.com/developer/article/1005481</p>
+<br />
+                  
+              </p>
+            </div>
+            <div class="post_footer">
+              
+              
+                <div class="next-post" style="margin-top: 20px;">
+                  <div class="next">下一篇</div>
+                  <a href="https://fforkboat.github.io/post/md5/">
+                    <h3 class="post-title">
+                      MD5
+                    </h3>
+                  </a>
+                </div>
+                
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+  
+  <div class="powered_by">
+    <a href="https://github.com/tangkaichuan/gridea-theme-one" target="_blank">Theme One,</a>
+    <a href="https://gridea.dev/" target="_blank">Powered by Gridea&#65281;</a>
+  </div>
+  <div class="footer_slogan">
+    福柯船长的船坞
+</div>
+<div id="back_to_top" class="back_to_top">
+  <span>△</span>
+</div>
+<script src="https://fforkboat.github.io/media/scripts/util.js"></script>
+
+</div>
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/styles/default.min.css">
+  <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad();
+    $(function() {
+        $("#toc").tocify({ selectors: "h2, h3, h4" });
+    });
+  </script>
+</body>
+
+</html>
