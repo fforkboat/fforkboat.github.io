@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://fforkboat.github.io</id>
     <title>fforkboat&apos;s dock</title>
-    <updated>2020-08-28T15:32:32.400Z</updated>
+    <updated>2020-08-30T09:48:02.833Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://fforkboat.github.io"/>
     <link rel="self" href="https://fforkboat.github.io/atom.xml"/>
@@ -10,6 +10,49 @@
     <logo>https://fforkboat.github.io/images/avatar.png</logo>
     <icon>https://fforkboat.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, fforkboat&apos;s dock</rights>
+    <entry>
+        <title type="html"><![CDATA[二分查找的正确写法]]></title>
+        <id>https://fforkboat.github.io/post/er-fen-cha-zhao-de-zheng-que-xie-fa/</id>
+        <link href="https://fforkboat.github.io/post/er-fen-cha-zhao-de-zheng-que-xie-fa/">
+        </link>
+        <updated>2020-08-30T08:09:50.000Z</updated>
+        <content type="html"><![CDATA[<p>想要写好一个二分查找的算法，重点在于思考清楚left和right所表示的含义，并且在while循环中更新它们时不能改变它们的含义（其实就是循环不变式的特性）。</p>
+<p>拿最简单的场景举个例子：从一个有序数组中查找一个值的索引，如果没有这个值，就返回-1</p>
+<p>在这道题目中，我最喜欢的做法是：</p>
+<p>令left和right分别表示搜索空间的下界和上界，我们要找的值只可能存在于[left, right]这个区间中，那么只要left &lt;= right，就表示这个区间中还有元素，我们就需要继续搜索，那么while循环的条件应该是<code>while (left &lt;= right)</code>。而left和right的初值自然分别是0和length-1</p>
+<ul>
+<li>
+<p>当values[mid] &gt; target时，易得target元素只可能出现在[left, mid - 1]中，所以为了继续维持right的下界含义，我们应该令right = mid - 1。</p>
+</li>
+<li>
+<p>当values[mid] &lt; target时，易得target元素只可能出现在[mid + 1, right]中，同理，我们应该令left = mid +  1。</p>
+</li>
+<li>
+<p>当values[mid] == target时，直接返回mid。</p>
+</li>
+</ul>
+<p>如果循环退出，表示已经没有元素可以搜索了，而此时还没有找到target的话就永远找不到了，所以应该返回-1</p>
+<p>再举个复杂点的例子：从一个有序数组中找到第一个大于或者等于target的值的索引</p>
+<p>此时，我喜欢的做法是：</p>
+<p>同样的，维护一个区间[left, right]，我们要找的元素只可能存在于[left, right]之间，在while循环的内部，不断更新left和right的值，<strong>直到区间的长度为1时退出</strong>，此时判断区间中唯一的元素是不是我们要找的值。</p>
+<p>令left和right的初始值分别为0, length - 1，循环的条件是<code>while(left &lt; right)</code></p>
+<ul>
+<li>当values[mid] &gt; target，right = mid - 1</li>
+<li>当values[mid] &lt; target，left = mid + 1</li>
+<li>当values[mid] == target，因为我们要找第一个符合条件的值，此时它只可能存在于[left, mid]中，所以我们令right = mid</li>
+</ul>
+<p>但是要注意的是，如果要找的是最后一个等于target的值的索引，那么当values[mid] == target时，按理说符合条件的值只可能出现在[mid, right]中，那么我们应该令left = mid，但是当区间中只有两个元素，即right = left + 1时，left已经是等于mid的了，如果还这样赋值的话就永远无法退出循环，因此需要特殊处理一下。</p>
+<p>上面这个例子还有另外一种解法：</p>
+<p>此时left, right表示的意义和上面的不同。left表示一个索引，它可能就是我们所需要寻找的目标索引，当left还可能被更新到一个更大的值时才继续循环，我们令right为这样的一个屏障，当left &lt;= right时，left才有可能继续更新、才能够继续循环。</p>
+<p>那么left的初值为0，right的初值为length-1，循环条件为<code>while(left &lt; right)</code></p>
+<ul>
+<li>当values[mid] &lt; target时，left可以被更新到mid + 1</li>
+<li>当values[mid] &gt; target时，right可以被更新到mid - 1</li>
+<li>当values[mid] == target时，left只有在left &lt;= mid-1时，才可能更新到一个更大的值（即mid），所以right应该被更新为mid - 1</li>
+</ul>
+<p>这种解法代码写起来容易一点，但是要搞清left和right的真实含义就有点困难了，有时或许你写的是对的，但是其实你并不是真的明白它为什么是对的。</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[select、poll、epoll]]></title>
         <id>https://fforkboat.github.io/post/selectpollepoll/</id>
