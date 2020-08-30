@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<title>理解MVCC | fforkboat&#39;s dock</title>
+<link rel="shortcut icon" href="https://fforkboat.github.io/favicon.ico">
+<link href="https://fforkboat.github.io/styles/main.css" rel="stylesheet">
+<link href="//at.alicdn.com/t/font_1678829_ntebi130zaa.css" rel="stylesheet">
+<link rel="alternate" type="application/rss+xml" title="fforkboat&#39;s dock » Feed" href="https://fforkboat.github.io/atom.xml">
+
+  <meta name="description" content="MVCC提供的抽象
+MVCC为我们提供了这样的一种抽象：
+系统中存在数据库的多个副本（或者说快照），事务的读操作（select操作）都发生在事务自身的副本之上，这样一来，读操作就不需要上锁，因此允许读写的并发，当然写写还是不能并发的。
+在R..." />
+  <meta name="keywords" content="" />
+
+  <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/2.3.1/css/bootstrap.css" rel="stylesheet">
+  <link href="https://fforkboat.github.io/media/css/jquery.tocify.css" rel="stylesheet">
+
+  <script src="https://cdn.bootcdn.net/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+  <script src="https://fforkboat.github.io/media/scripts/jquery.ui.core.js"></script>
+  <script src="https://fforkboat.github.io/media/scripts/bootstrap.js"></script>
+  <script src="https://fforkboat.github.io/media/scripts/jquery.tocify.js"></script>
+
+  <style>
+    #toc .nav-list > .active > a{
+      color: #007fff;
+      text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
+      background-color: #ebedef;
+    }
+    #toc a {
+      color: #000000;
+    }
+    #toc {
+      border: 0;
+    }
+  </style>
+</head>
+
+<body style="height: auto">
+  <div id="toc" style="right: 20px; top: 80px"></div>
+  <div class="main animated">
+    <div class="header animated fadeInDown">
+  <div class="site_title_container">
+    <div class="site_title">
+      <a href="https://fforkboat.github.io">
+        fforkboat&#39;s dock
+      </a>
+    </div>
+  </div>
+  <div class="my_socials">
+    
+    
+          
+    
+          
+    
+          
+    
+          
+    
+          
+    <a href="https://fforkboat.github.io/atom.xml" target="_blank">
+      <i class="iconfont icon-rss"></i></a>
+  </div>
+</div>
+
+<div class="header_menu">
+  
+  
+  <a href="/" class="menu">首页</a>
+  
+
+  
+  <a href="/archives" class="menu">归档</a>
+  
+
+  
+  <a href="/tags" class="menu">标签</a>
+  
+
+  
+  <a href="/post/about" class="menu">关于</a>
+  
+
+  <div class="gridea-search-div">
+    <form id="gridea-search-form" action="https://fforkboat.github.io/search/">
+      <input class="gridea-search-input" autocomplete="off" spellcheck="false" name="q" />
+    </form>
+  </div>
+</div>
+
+    <div class="autopagerize_page_element">
+      <div class="content">
+        <div class="post_page">
+          <div class="post animated fadeInDown">
+            <div class="post_title post_detail_title">
+              <h1 class="indicator-free">
+                <a>
+                  理解MVCC</a>
+              </h2>
+              <span class="article-info">2020-08-30, 717 words, 3 min read</span>
+            </div>
+            <div class="post_content markdown">
+              <p class="md_block">
+                <span class="md_line md_line_start md_line_end">
+                  <h2 id="mvcc提供的抽象">MVCC提供的抽象</h2>
+<p>MVCC为我们提供了这样的一种抽象：</p>
+<p>系统中存在数据库的多个副本（或者说快照），事务的读操作（select操作）都发生在事务自身的副本之上，这样一来，读操作就不需要上锁，因此允许读写的并发，当然写写还是不能并发的。</p>
+<p>在RC模式下，每次读都会创建一份快照，因此可以读取到其他事务新提交的数据，而在RR模式下，只有第一次读的时候会创建快照，之后读都是读这份快照。</p>
+<p>这样看起来，RR模式下并不存在什么幻读的问题，因为事务总是读取自己的快照。但是需要注意的是，数据库中其实存在两种类型的读，快照读和当前读。select读属于快照读，快照读确实不存在幻读的问题。而增删改属于当前读，在更新数据的时候其实也是需要读取数据的，而且读取的不是快照信息，而是最新信息，虽然在更新的时候会上行锁，以此保证同一行最多只能同时被一个事务修改（当前读），但是单纯的行锁没有办法锁定行间隙，因此会出现幻读的情况，举个例子，假设有两个同时在执行的事务A、B，事务A中执行一条更新语句: <code>UPDATE products SET name='test' where stock=3</code>，这条更新语句会把所有stock=3的行的name设置为'test'，并且把这些行锁定，事务B就无法更新这些行了（会被阻塞），但是如果没有间隙锁，我们还是可以执行<code>INSERT INTO products(name, stock) VALUES ('not test', 3)</code>，这样就会插入新的一行，它的stock=3，但是name不是'test'，那么假设我们再在事务A中执行一遍刚才的UPDATE语句，此时返回的所影响的行的数目就会比上一次执行多了一行，这就出现了幻读。所以在RR模式下，我们需要间隙锁加行锁一起工作，来消除幻读的问题。</p>
+<h2 id="mvcc的实现">MVCC的实现</h2>
+<p>版本列、undo log、<code>ReadView</code></p>
+<p>版本列：每一行都有一个隐藏列，用于记录这一行的版本，它存储的实际值是最后一次修改该行的事务id</p>
+<p>undo log：每一行有另一个隐藏列，用于记录上一版本的位置</p>
+<p><code>ReadView</code>：很像数据库的视图，都是提供了一个看待底层数据的角度，角度不同，看到的数据也就不同。从逻辑上说<code>ReadView</code>就是对数据库的一份快照。RC模式下，每次读都会创建一个<code>ReadView</code>，而RR模式下，事务第一次读时会创建一个<code>ReadView</code></p>
+<br />
+                  
+              </p>
+            </div>
+            <div class="post_footer">
+              
+              
+                <div class="next-post" style="margin-top: 20px;">
+                  <div class="next">下一篇</div>
+                  <a href="https://fforkboat.github.io/post/http/">
+                    <h3 class="post-title">
+                      HTTP
+                    </h3>
+                  </a>
+                </div>
+                
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+  
+  <div class="powered_by">
+    <a href="https://github.com/tangkaichuan/gridea-theme-one" target="_blank">Theme One,</a>
+    <a href="https://gridea.dev/" target="_blank">Powered by Gridea&#65281;</a>
+  </div>
+  <div class="footer_slogan">
+    福柯船长的船坞
+</div>
+<div id="back_to_top" class="back_to_top">
+  <span>△</span>
+</div>
+<script src="https://fforkboat.github.io/media/scripts/util.js"></script>
+
+</div>
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/styles/default.min.css">
+  <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad();
+    $(function() {
+        $("#toc").tocify({ selectors: "h2, h3, h4" });
+    });
+  </script>
+</body>
+
+</html>

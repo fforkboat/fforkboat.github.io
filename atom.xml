@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://fforkboat.github.io</id>
     <title>fforkboat&apos;s dock</title>
-    <updated>2020-08-30T10:18:18.223Z</updated>
+    <updated>2020-08-30T13:56:14.892Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://fforkboat.github.io"/>
     <link rel="self" href="https://fforkboat.github.io/atom.xml"/>
@@ -10,6 +10,24 @@
     <logo>https://fforkboat.github.io/images/avatar.png</logo>
     <icon>https://fforkboat.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, fforkboat&apos;s dock</rights>
+    <entry>
+        <title type="html"><![CDATA[理解MVCC]]></title>
+        <id>https://fforkboat.github.io/post/li-jie-mvcc/</id>
+        <link href="https://fforkboat.github.io/post/li-jie-mvcc/">
+        </link>
+        <updated>2020-08-30T13:55:46.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="mvcc提供的抽象">MVCC提供的抽象</h2>
+<p>MVCC为我们提供了这样的一种抽象：</p>
+<p>系统中存在数据库的多个副本（或者说快照），事务的读操作（select操作）都发生在事务自身的副本之上，这样一来，读操作就不需要上锁，因此允许读写的并发，当然写写还是不能并发的。</p>
+<p>在RC模式下，每次读都会创建一份快照，因此可以读取到其他事务新提交的数据，而在RR模式下，只有第一次读的时候会创建快照，之后读都是读这份快照。</p>
+<p>这样看起来，RR模式下并不存在什么幻读的问题，因为事务总是读取自己的快照。但是需要注意的是，数据库中其实存在两种类型的读，快照读和当前读。select读属于快照读，快照读确实不存在幻读的问题。而增删改属于当前读，在更新数据的时候其实也是需要读取数据的，而且读取的不是快照信息，而是最新信息，虽然在更新的时候会上行锁，以此保证同一行最多只能同时被一个事务修改（当前读），但是单纯的行锁没有办法锁定行间隙，因此会出现幻读的情况，举个例子，假设有两个同时在执行的事务A、B，事务A中执行一条更新语句: <code>UPDATE products SET name='test' where stock=3</code>，这条更新语句会把所有stock=3的行的name设置为'test'，并且把这些行锁定，事务B就无法更新这些行了（会被阻塞），但是如果没有间隙锁，我们还是可以执行<code>INSERT INTO products(name, stock) VALUES ('not test', 3)</code>，这样就会插入新的一行，它的stock=3，但是name不是'test'，那么假设我们再在事务A中执行一遍刚才的UPDATE语句，此时返回的所影响的行的数目就会比上一次执行多了一行，这就出现了幻读。所以在RR模式下，我们需要间隙锁加行锁一起工作，来消除幻读的问题。</p>
+<h2 id="mvcc的实现">MVCC的实现</h2>
+<p>版本列、undo log、<code>ReadView</code></p>
+<p>版本列：每一行都有一个隐藏列，用于记录这一行的版本，它存储的实际值是最后一次修改该行的事务id</p>
+<p>undo log：每一行有另一个隐藏列，用于记录上一版本的位置</p>
+<p><code>ReadView</code>：很像数据库的视图，都是提供了一个看待底层数据的角度，角度不同，看到的数据也就不同。从逻辑上说<code>ReadView</code>就是对数据库的一份快照。RC模式下，每次读都会创建一个<code>ReadView</code>，而RR模式下，事务第一次读时会创建一个<code>ReadView</code></p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[HTTP]]></title>
         <id>https://fforkboat.github.io/post/http/</id>
