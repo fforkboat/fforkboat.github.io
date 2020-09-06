@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://fforkboat.github.io</id>
     <title>fforkboat&apos;s dock</title>
-    <updated>2020-09-01T11:21:26.710Z</updated>
+    <updated>2020-09-06T12:39:21.867Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://fforkboat.github.io"/>
     <link rel="self" href="https://fforkboat.github.io/atom.xml"/>
@@ -10,6 +10,30 @@
     <logo>https://fforkboat.github.io/images/avatar.png</logo>
     <icon>https://fforkboat.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, fforkboat&apos;s dock</rights>
+    <entry>
+        <title type="html"><![CDATA[IO与缓冲区]]></title>
+        <id>https://fforkboat.github.io/post/io-yu-huan-chong-qu/</id>
+        <link href="https://fforkboat.github.io/post/io-yu-huan-chong-qu/">
+        </link>
+        <updated>2020-09-06T12:38:06.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="两个缓冲区">两个缓冲区</h2>
+<p>IO一般会涉及到两个缓冲区，一个是进程缓冲区，一个是内核缓冲区，缓冲区其实就是指内存。</p>
+<p>一个完整的输出过程中，数据的流动一般为：进程缓冲区 -&gt; 内核缓冲区 -&gt; 文件</p>
+<p>把数据从进程（缓冲区）传入内核（缓冲区）的方法是使用系统调用<code>write()</code>，系统调用的开销较大，应该尽量避免。</p>
+<p>把数据从内核传入文件是由<a href="https://blog.csdn.net/zhejfl/article/details/82555634">DMA</a>来实现的</p>
+<h2 id="进程缓冲区">进程缓冲区</h2>
+<p>进程缓冲区是我们进程内部的缓冲区，是进程所拥有的内存，更具体的来说，是堆内存，是我们自己或者库为我们申请的堆内存。</p>
+<p>拿一个C程序举例，当我们调用C标准库为我们提供的输入输出函数如<code>fprintf</code>时，C标准库并不会直接调用<code>write()</code>，而是把数据放入C标准库申请的堆内存，即我们所说的进程缓冲区之中，等到进程缓存区满了之后，再调用write()来一次把数据传输完（也可以设置为每遇到一个\n就刷新进程缓冲区）。而内核也很懒，不会马上把内核缓冲区中的数据刷入文件，也会等一段时间，再一起刷入。</p>
+<h2 id="两者的用途对比">两者的用途对比</h2>
+<p>用户缓冲区：减少系统调用次数，从而降低操作系统在用户态与核心态切换所耗费的时间</p>
+<p>内核缓冲区：减少磁盘写的次数，提高磁盘IO效率</p>
+<h2 id="fflush和fsync"><code>fflush</code>和<code>fsync</code></h2>
+<p><code>fflush</code>把进程缓冲区的数据强制刷新到内核缓冲区，<code>fsync</code>把内核缓冲区的数据强制刷新到物理媒介上</p>
+<h2 id="参考资料">参考资料</h2>
+<p><a href="https://www.cnblogs.com/yc3110/p/10440613.html">【底层原理】用户进程缓冲区和内核缓冲区 - 脱离低级趣味 - 博客园</a></p>
+<p><a href="https://www.jianshu.com/p/62b307454601">i/o缓冲区、内核缓冲区 - 简书</a></p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[理解MVCC]]></title>
         <id>https://fforkboat.github.io/post/li-jie-mvcc/</id>

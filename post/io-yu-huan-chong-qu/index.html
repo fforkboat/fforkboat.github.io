@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<title>IO与缓冲区 | fforkboat&#39;s dock</title>
+<link rel="shortcut icon" href="https://fforkboat.github.io/favicon.ico">
+<link href="https://fforkboat.github.io/styles/main.css" rel="stylesheet">
+<link href="//at.alicdn.com/t/font_1678829_ntebi130zaa.css" rel="stylesheet">
+<link rel="alternate" type="application/rss+xml" title="fforkboat&#39;s dock » Feed" href="https://fforkboat.github.io/atom.xml">
+
+  <meta name="description" content="两个缓冲区
+IO一般会涉及到两个缓冲区，一个是进程缓冲区，一个是内核缓冲区，缓冲区其实就是指内存。
+一个完整的输出过程中，数据的流动一般为：进程缓冲区 -&gt; 内核缓冲区 -&gt; 文件
+把数据从进程（缓冲区）传入内核（缓冲区）的方法..." />
+  <meta name="keywords" content="" />
+
+  <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/2.3.1/css/bootstrap.css" rel="stylesheet">
+  <link href="https://fforkboat.github.io/media/css/jquery.tocify.css" rel="stylesheet">
+
+  <script src="https://cdn.bootcdn.net/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+  <script src="https://fforkboat.github.io/media/scripts/jquery.ui.core.js"></script>
+  <script src="https://fforkboat.github.io/media/scripts/bootstrap.js"></script>
+  <script src="https://fforkboat.github.io/media/scripts/jquery.tocify.js"></script>
+
+  <style>
+    #toc .nav-list > .active > a{
+      color: #007fff;
+      text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
+      background-color: #ebedef;
+    }
+    #toc a {
+      color: #000000;
+    }
+    #toc {
+      border: 0;
+    }
+  </style>
+</head>
+
+<body style="height: auto">
+  <div id="toc" style="right: 20px; top: 80px"></div>
+  <div class="main animated">
+    <div class="header animated fadeInDown">
+  <div class="site_title_container">
+    <div class="site_title">
+      <a href="https://fforkboat.github.io">
+        fforkboat&#39;s dock
+      </a>
+    </div>
+  </div>
+  <div class="my_socials">
+    
+    
+          
+    
+          
+    
+          
+    
+          
+    
+          
+    <a href="https://fforkboat.github.io/atom.xml" target="_blank">
+      <i class="iconfont icon-rss"></i></a>
+  </div>
+</div>
+
+<div class="header_menu">
+  
+  
+  <a href="/" class="menu">首页</a>
+  
+
+  
+  <a href="/archives" class="menu">归档</a>
+  
+
+  
+  <a href="/tags" class="menu">标签</a>
+  
+
+  
+  <a href="/post/about" class="menu">关于</a>
+  
+
+  <div class="gridea-search-div">
+    <form id="gridea-search-form" action="https://fforkboat.github.io/search/">
+      <input class="gridea-search-input" autocomplete="off" spellcheck="false" name="q" />
+    </form>
+  </div>
+</div>
+
+    <div class="autopagerize_page_element">
+      <div class="content">
+        <div class="post_page">
+          <div class="post animated fadeInDown">
+            <div class="post_title post_detail_title">
+              <h1 class="indicator-free">
+                <a>
+                  IO与缓冲区</a>
+              </h2>
+              <span class="article-info">2020-09-06, 491 words, 2 min read</span>
+            </div>
+            <div class="post_content markdown">
+              <p class="md_block">
+                <span class="md_line md_line_start md_line_end">
+                  <h2 id="两个缓冲区">两个缓冲区</h2>
+<p>IO一般会涉及到两个缓冲区，一个是进程缓冲区，一个是内核缓冲区，缓冲区其实就是指内存。</p>
+<p>一个完整的输出过程中，数据的流动一般为：进程缓冲区 -&gt; 内核缓冲区 -&gt; 文件</p>
+<p>把数据从进程（缓冲区）传入内核（缓冲区）的方法是使用系统调用<code>write()</code>，系统调用的开销较大，应该尽量避免。</p>
+<p>把数据从内核传入文件是由<a href="https://blog.csdn.net/zhejfl/article/details/82555634">DMA</a>来实现的</p>
+<h2 id="进程缓冲区">进程缓冲区</h2>
+<p>进程缓冲区是我们进程内部的缓冲区，是进程所拥有的内存，更具体的来说，是堆内存，是我们自己或者库为我们申请的堆内存。</p>
+<p>拿一个C程序举例，当我们调用C标准库为我们提供的输入输出函数如<code>fprintf</code>时，C标准库并不会直接调用<code>write()</code>，而是把数据放入C标准库申请的堆内存，即我们所说的进程缓冲区之中，等到进程缓存区满了之后，再调用write()来一次把数据传输完（也可以设置为每遇到一个\n就刷新进程缓冲区）。而内核也很懒，不会马上把内核缓冲区中的数据刷入文件，也会等一段时间，再一起刷入。</p>
+<h2 id="两者的用途对比">两者的用途对比</h2>
+<p>用户缓冲区：减少系统调用次数，从而降低操作系统在用户态与核心态切换所耗费的时间</p>
+<p>内核缓冲区：减少磁盘写的次数，提高磁盘IO效率</p>
+<h2 id="fflush和fsync"><code>fflush</code>和<code>fsync</code></h2>
+<p><code>fflush</code>把进程缓冲区的数据强制刷新到内核缓冲区，<code>fsync</code>把内核缓冲区的数据强制刷新到物理媒介上</p>
+<h2 id="参考资料">参考资料</h2>
+<p><a href="https://www.cnblogs.com/yc3110/p/10440613.html">【底层原理】用户进程缓冲区和内核缓冲区 - 脱离低级趣味 - 博客园</a></p>
+<p><a href="https://www.jianshu.com/p/62b307454601">i/o缓冲区、内核缓冲区 - 简书</a></p>
+<br />
+                  
+              </p>
+            </div>
+            <div class="post_footer">
+              
+              
+                <div class="next-post" style="margin-top: 20px;">
+                  <div class="next">下一篇</div>
+                  <a href="https://fforkboat.github.io/post/li-jie-mvcc/">
+                    <h3 class="post-title">
+                      理解MVCC
+                    </h3>
+                  </a>
+                </div>
+                
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+  
+  <div class="powered_by">
+    <a href="https://github.com/tangkaichuan/gridea-theme-one" target="_blank">Theme One,</a>
+    <a href="https://gridea.dev/" target="_blank">Powered by Gridea&#65281;</a>
+  </div>
+  <div class="footer_slogan">
+    福柯船长的船坞
+</div>
+<div id="back_to_top" class="back_to_top">
+  <span>△</span>
+</div>
+<script src="https://fforkboat.github.io/media/scripts/util.js"></script>
+
+</div>
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/styles/default.min.css">
+  <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad();
+    $(function() {
+        $("#toc").tocify({ selectors: "h2, h3, h4" });
+    });
+  </script>
+</body>
+
+</html>
